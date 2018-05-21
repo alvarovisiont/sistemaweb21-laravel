@@ -1,0 +1,1 @@
+<img src="{{ asset('assets_sistema/images/gallery/complementos_login/'.$banner) }}" alt="">
