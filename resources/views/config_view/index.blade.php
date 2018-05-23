@@ -33,7 +33,7 @@
 
     $th = ['','Módulo','tabla','titulo','Ruta Imagen'];
     
-    $keys_data = ['modulo','tabla','titulo','ruta_imagen'];
+    $keys_data = [['modulo',0,0],['tabla',1,0],['titulo',0,0],['ruta_imagen',0,0]];
 
     $totales = ['Vistas' => count($data)];
 

@@ -301,7 +301,9 @@ class MakeviewController extends Controller
       foreach ($config_dt as $row) 
       {
         $th.= "'".$row->nombre."',";
-        $key_data.= "'".$row->key."',";
+        $resaltar = $row->resaltar ? true : 0;
+        $format_number = $row->format_number ? true : 0;
+        $key_data.= "['".$row->key."',".$resaltar.",".$format_number."],";
       }
 
       foreach (explode(',', $config_modulo->breadcrumb) as $row) 
@@ -337,16 +339,17 @@ class MakeviewController extends Controller
 
         $array_fillable.= "'$row->name_id',";
 
-        if($row->tipo !== '5' && $row->tipo !== '6')
+        if($row->tipo !== 5 && $row->tipo !== 6)
         {
           
           $array.= "'".$row->name_id."'".",";
           $array.= "'".$row->placeholder."'".",";
           $array.= "'".$row->value."'".",";
 
-          if($row->tipo === '3')
+          if($row->tipo === 3)
           {
-            $options_html_querys .= '$options'.$con_elements.'= DB::select(BD::raw("'."SELECT id, $row->selected from $row->option where activo = 't'".'"));'." \n \t \t";
+            
+            $options_html_querys .= '$options'.$con_elements.'= DB::select("'."SELECT id, $row->selected from $row->option where activo = true".'");'." \n \t \t";
 
             $selected = !empty($row->selected) ? $row->selected : 'nombre';
             
@@ -354,7 +357,7 @@ class MakeviewController extends Controller
             $array.= "'".$selected."',";
             
           }
-          elseif($row->tipo === '4')
+          elseif($row->tipo === 4)
           {
             $valores = explode('-', $row->option);
 
@@ -388,7 +391,7 @@ class MakeviewController extends Controller
 
           if(!empty($row->check_table))
           {
-            $sql = "SELECT id, $row->check_field from $row->check_table where activo = 't'";
+            $sql = "SELECT id, $row->check_field from $row->check_table where activo = true";
             //$result = $this->configviewmodel->query($sql);
             
             $x = '[';
@@ -623,39 +626,40 @@ class MakeviewController extends Controller
   // ============================= CONTROLADOR MÄS FUNCIONES ==================================
 
     $data_controller = '<?php
-  namespace App\Http\Controllers;
+namespace App\Http\Controllers;
+use App\Http\Controllers\Controller;
 
-  use Illuminate\Support\Facades\Auth;
-  use Illuminate\Support\Facades\DB;
-  use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
-  use App\Models\\'.ucwords($modelo_import).';
+use App\Models\\'.ucwords($modelo_import).';
 
-  class '.$nombre_controller.' extends Controller
+class '.$nombre_controller.' extends Controller
+{
+
+  public function index(Request $request)
   {
+    $id_menu = $request->get("menu");
 
-    public function index(Request $request)
-    {
-      $id_menu = $request->get("menu");
+    $array = array(
+      "id_menu" => $id_menu,
+      "funcion" => "'.$nombre_modulo_vista.'.index",
+      "ruta_imagen" => "'.$ruta_imagen.'"
+    );
+    
+    session($array);
 
-      $array = array(
-        "id_menu" => $id_menu,
-        "funcion" => "'.$nombre_modulo_vista.'.index",
-        "ruta_imagen" => "'.$ruta_imagen.'"
-      );
-      
-      session($array);
-
-      '.$options_html_querys.'
-      $data["data"] = '.ucwords($modelo_import).'::all();
-      $data["campos"] = '.$campos.'
-      return view("'.strtolower($nombre_modulo_vista).'.index")->with($data);
-    }
-
-    '.$funciones_controlador_primario.' 
+    '.$options_html_querys.'
+    $data["data"] = '.ucwords($modelo_import).'::all();
+    $data["campos"] = '.$campos.'
+    return view("'.strtolower($nombre_modulo_vista).'.index")->with($data);
   }
 
-  ?>
+  '.$funciones_controlador_primario.' 
+}
+
+?>
   ';
       $respuesta = [];
       if(!file_exists($ruta_vista.strtolower($nombre_modulo_vista)))

@@ -62,6 +62,7 @@
                               <th class="text-center text-primary">Th</th>
                               <th class="text-center text-primary">Activo</th>
                               <th class="text-center text-primary">Key Tbody</th>
+                              <th class="text-center text-primary">Resaltar</th>
                               <th class="text-center text-primary">Orden</th>
                             </tr>
                           </thead>
@@ -76,6 +77,8 @@
                                     data-th ="{{ $row->nombre }}"
                                     data-activo ="{{ $row->activo }}"
                                     data-key ="{{ $row->key }}"
+                                    data-resaltar ="{{ $row->resaltar }}"
+                                    data-format_number ="{{ $row->format_number }}"
                                     data-orden ="{{ $row->orden }}"
                                   >
                                                       <img src="{{ asset('assets_sistema/images/acciones/modificar.png') }}" width="20px" class="modificar"/>
@@ -87,6 +90,7 @@
                                 <td>{{ $row->nombre }}</td>
                                 <td>{{ $row->activo ? 'Activo' : 'Desactivado' }}</td>
                                 <td>{{ $row->key }}</td>
+                                <td>{{ $row->resaltar ? 'Si' : 'No' }}</td>
                                 <td>
                                   
                                   <span class="label label-lg label-yellow arrowed-in arrowed-in-right">{{ $row->orden }}</span>
@@ -112,6 +116,22 @@
                             <label for="key" class="control-label col-md-2 col-sm-2">Key Body</label>
                             <div class="col-md-4 col-sm-4">
                               <input type="text" id="key" name="key" required="" class="form-control" value="">
+                            </div>
+                          </div>
+                          <div class="form-group">
+                            <label for="th" class="control-label col-md-2 col-sm-2">Resaltar</label>
+                            <div class="col-md-4 col-sm-4">
+                              <select name="resaltar" id="resaltar" class="form-control">
+                                <option value="">No</option>
+                                <option value="1">Si</option>
+                              </select>
+                            </div>
+                            <label for="key" class="control-label col-md-2 col-sm-2">Formateo Número</label>
+                            <div class="col-md-4 col-sm-4">
+                              <select name="format_number" id="format_number" class="form-control">
+                                <option value="">No</option>
+                                <option value="1">Si</option>
+                              </select>
                             </div>
                           </div>
                           <div class="form-group">

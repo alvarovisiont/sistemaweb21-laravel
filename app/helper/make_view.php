@@ -3,6 +3,12 @@
   use App\PermisoAccion;
   use Illuminate\Support\Facades\DB;
 
+  function validateDate($date, $format = 'Y-m-d H:i:s'){
+
+    $d = DateTime::createFromFormat($format, $date);
+    return $d && $d->format($format) == $date;
+  }
+
   function form_vista($enctype = null,$f_store = null,$campos, $data = null,$th = null,$key_data = null,$totales = null,$color_totales = null,$breadcrumbs,$titulo_vista = null,$membrete = null,$ruta_imagen)
    {
 
@@ -220,35 +226,34 @@
         
         foreach ($data as $key => $row) {
 
-            $boton_accion = '';
-
             if($result->m_accion)
             {
                 // botón modificar
 
                 $data_attr = '';
+                $boton_accion = '';
 
                 foreach ($campos as $row1) 
                 {   
                     
-                    if(!is_array($row1[3]) && isset($row1[6]) && !is_array($row1[6]))
+                    if(!is_array($row1[4]) && isset($row1[7]) && !is_array($row1[5]))
                     {
-                        $data_attr .= ' data-'.$row1[3].'="'.$row->{$row1[3]}.'"' ;
+                        $data_attr .= ' data-'.$row1[4].'="'.$row->{$row1[4]}.'"' ;
                     }
-                    elseif(isset($row1[6]) && is_array($row1[6]))
+                    elseif(isset($row1[7]) && is_array($row1[7]))
                     {
-                        $data_attr .= ' data-'.$row1[3].'_select="'.$row->{$row1[3]}.'"';       
+                        $data_attr .= ' data-'.$row1[4].'_select="'.$row->{$row1[4]}.'"';       
                     }
-                    else if(is_array($row1[3]))
+                    else if(is_array($row1[4]))
                     {
-                        foreach ($row1[3] as $row2) 
+                        foreach ($row1[4] as $row2) 
                         {
                             $data_attr .= ' data-'.$row2[1].'_check_radio="'.$row->{$row2[1]}.'"';       
                         }
                     }
                     else
                     {
-                        $data_attr .= ' data-'.$row1[3].'="'.$row->{$row1[3]}.'"' ;
+                        $data_attr .= ' data-'.$row1[4].'="'.$row->{$row1[4]}.'"' ;
                     }
                 }
 
@@ -284,54 +289,64 @@
 
             foreach ($key_data as $row1) 
             {
-               if($row->{$row1} === TRUE)
+                $span = '<span class="label label-lg label-yellow arrowed-in arrowed-in-right">';
+                $resaltador = $row1[1] === 1 ? $span : '';
+                $cierre_resaltador = $row1[1] === 1 ? '</span>' : '';
+                $row->{$row1[0]} = $row1[2] === 1 ? number_format($row->{$row1[0]},2,',','.') : $row->{$row1[0]};
+                
+
+               if($row->{$row1[0]} === TRUE)
                 {
                     $on_off = '<img width="35px" src="'.asset("assets_sistema/images/gallery/activo.jpg").'" data-tool="tooltip" title="Activo"/>';
 
-                    $cuerpo_tabla.='<td>'.$on_off.'</td>';
+                    $cuerpo_tabla.='<td>'.$resaltador.$on_off.$cierre_resaltador.'</td>';
 
                 }
-                else if($row->{$row1} === FALSE)
+                else if($row->{$row1[0]} === FALSE)
                 {
                     $on_off = '<img width="35px" src="'.asset("assets_sistema/images/gallery/desactivado.png").'" data-tool="tooltip" title="Desactivado" />';
 
-                    $cuerpo_tabla.='<td>'.$on_off.'</td>';
+                    $cuerpo_tabla.='<td>'.$resaltador.$on_off.$cierre_resaltador.'</td>';
                     
                 }
-                else if($row->{$row1} === 'MASCULINO')
+                else if($row->{$row1[0]} === 'MASCULINO')
                 {
                     $masculino = '<img width="35px" src="'.asset("assets_sistema/images/avatars/avatar3.png").'" data-tool="tooltip" title="MASCULINO"/>';
 
-                    $cuerpo_tabla.='<td>'.$masculino.'</td>';
+                    $cuerpo_tabla.='<td>'.$resaltador.$masculino.$cierre_resaltador.'</td>';
 
                 }
-                else if($row->{$row1} === 'FEMENINO')
+                else if($row->{$row1[0]} === 'FEMENINO')
                 {
                     $femenino = '<img width="35px" src="'.asset("assets_sistema/images/avatars/avatar4.png").'" data-tool="tooltip" title="FEMENINO"/>';
 
-                    $cuerpo_tabla.='<td>'.$femenino.'</td>';
+                    $cuerpo_tabla.='<td>'.$resaltador.$femenino.$cierre_resaltador.'</td>';
                 }
-                else if( strpos($row->{$row1}, 'jpg') || strpos($row->{$row1}, 'png'))
+                else if( strpos($row->{$row1[0]}, 'jpg') || strpos($row->{$row1[0]}, 'png'))
                 {
                     $imagen_campo = '
-                    <a href="'.base_url().$ruta_imagen.$row->{$row1}.'" target="_blank">
-                    <img width="40px" src="'.base_url().$ruta_imagen.$row->{$row1}.'" data-tool="tooltip" title=""/>
+                    <a href="'.base_url().$ruta_imagen.$row->{$row1[0]}.'" target="_blank">
+                    <img width="40px" src="'.base_url().$ruta_imagen.$row->{$row1[0]}.'" data-tool="tooltip" title=""/>
                     </a>';
 
-                    $cuerpo_tabla.='<td>'.$imagen_campo.'</td>';
+                    $cuerpo_tabla.='<td>'.$resaltador.$imagen_campo.$cierre_resaltador.'</td>';
                 }
-                else if( strpos($row->{$row1}, 'pdf'))
+                else if( strpos($row->{$row1[0]}, 'pdf'))
                 {
                     $imagen_campo = '
-                    <a href="'.base_url().$ruta_imagen.$row->{$row1}.'" target="_blank">
+                    <a href="'.base_url().$ruta_imagen.$row->{$row1[0]}.'" target="_blank">
                     <img width="40px" src="'.base_url().'assets_sistema/images/acciones/reporte.jpg" data-tool="tooltip" title=""/>
                     </a>';
 
-                    $cuerpo_tabla.='<td>'.$imagen_campo.'</td>';
+                    $cuerpo_tabla.='<td>'.$resaltador.$imagen_campo.$cierre_resaltador.'</td>';
+                }
+                else if(validateDate($row->{$row1[0]}))
+                {
+                    $cuerpo_tabla.='<td>'.$resaltador.date('d-m-Y H:i:s',strtotime($row->{$row1[0]})).$cierre_resaltador.'</td>';
                 }
                 else
                 {
-                    $cuerpo_tabla.='<td>'.$row->{$row1}.'</td>';
+                    $cuerpo_tabla.='<td>'.$resaltador.$row->{$row1[0]}.$cierre_resaltador.'</td>';
                 }
                 
             }
@@ -347,9 +362,12 @@
                         <div class="col-md-12 col-sm-12">
                             <div class="widget-box">
                                 <div class="widget-header">
-                                    <h3 class="widget-title">
-                                        '.$titulo_vista.'
-                                    </h3>
+                                    <h5 class="widget-title">
+                                        <li class="bigger-200 '.$color_totales.'">
+                                            <i class="ace-icon fa fa-circle"></i>
+                                            '.$titulo_vista.'
+                                        </li>
+                                    </h5>
                                 </div>
                                 <div class="widget-body">
                                     <div class="widget-main">
@@ -395,9 +413,12 @@
                     <div class="col-md-12 col-sm-12">
                         <div class="widget-box">
                             <div class="widget-header">
-                                <h3 class="widget-title">
-                                   Crear '.$titulo_vista.'
-                                </h3>
+                                <h5 class="widget-title">
+                                    <li class="bigger-200 '.$color_totales.'">
+                                        <i class="ace-icon fa fa-circle"></i>
+                                        Crear '.$titulo_vista.'
+                                    </li>
+                                </h5>
                             </div>
                             <div class="widget-body">
                                 <div class="widget-main">    
@@ -511,7 +532,7 @@
                         # code...
                         if(isset($rad[4]))
                         {
-                            $result = DD::select( DB::raw( base64_decode($rad[4]) ) );
+                            $result = DD::select( base64_decode($rad[4]) );
 
                             foreach ($result as $row_radio) 
                             {
@@ -581,7 +602,7 @@
                     {
                         if(isset($che[4]))
                         {
-                            $result = DB::select( DB::raw( base64_decode($che[4]) ) );
+                            $result = DB::select( base64_decode($che[4]) );
 
                             foreach ($result as $row_check) 
                             {

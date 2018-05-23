@@ -9,7 +9,7 @@ class VistaTitulodt extends Model
     //
   protected $table = "vista_titulodt";
 
-  protected $fillable = ['id_config','nombre','key','orden','activo','createdat','updatedat'];
+  protected $fillable = ['id_config','nombre','key','orden','activo','createdat','updatedat','resaltar','format_number'];
 
   public $timestamps = false;
 

@@ -50,6 +50,8 @@
                         data-th ="${datos.nombre}"
                         data-activo ="${datos.activo}"
                         data-key ="${datos.key}"
+                        data-resaltar ="${datos.resaltar}"
+                        data-format_number ="${datos.format_number}"
                         data-orden ="${datos.orden}"
                       >
                                 <img src="{{ asset('assets_sistema/images/acciones/modificar.png') }}" width="20px" class="modificar"/>
@@ -61,6 +63,7 @@
                     <td>${datos.nombre}</td>
                     <td>Activo</td>
                     <td>${datos.key}</td>
+                    <td>${datos.resaltar ? 'Si' : 'No'}</td>
                     <td><span class="label label-lg label-yellow arrowed-in arrowed-in-right">${datos.orden}</span></td>
                   </tr>`
 
@@ -104,6 +107,8 @@
       $('#form_dt').find('#activo').val(dataset.activo)
       $('#form_dt').find('#key').val(dataset.key)
       $('#form_dt').find('#orden').val(dataset.orden)
+      $('#form_dt').find('#format_number').val(dataset.format_number)
+      $('#form_dt').find('#resaltar').val(dataset.resaltar)
 
       $('#form_dt').find('#orden').prop('readonly',false)
       $('#form_dt').attr('action', '{{ url("crear_vista/update_dt") }}/'+dataset.id)
@@ -356,7 +361,7 @@
       $('#form_form').attr('action', '{{ url("crear_vista/update_form") }}/'+dataset.id)
       $('#form_form').append('<input type="hidden" name="_method" id="_method_form_form" value="PATCH" />')
 
-      if(dataset.tipo === 3 || dataset.tipo === 4)
+      if(dataset.tipo === '3' || dataset.tipo === '4')
       {
         $('#form_form').find('#option').prop('disabled',false)
         $('#form_form').find('#selected').prop('disabled',false)
@@ -364,7 +369,7 @@
         $('#form_form').find('#check_field').prop('disabled',true)  
 
       }
-      else if (dataset.tipo === 5 || dataset.tipo === 6)
+      else if (dataset.tipo === '5' || dataset.tipo === '6')
       {
         $('#form_form').find('#option').prop('disabled',true)
         $('#form_form').find('#selected').prop('disabled',false)  
