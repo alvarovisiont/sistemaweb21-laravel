@@ -17,7 +17,7 @@ class ConfigController extends Controller
         //
         $array = [];
 
-        select_db($request->tipo_bd);
+        select_db($request->tipo_db);
 
         $datos = Config::first();
 

@@ -21,7 +21,7 @@ class MakeviewController extends Controller
         //
         session(['id_menu' => $request->menu ]);
 
-        $data = Configview::all();
+        $data = Configview::orderBy("id","desc")->get();
         return view('config_view.index')->with('data',$data);
 
     }
@@ -178,6 +178,10 @@ class MakeviewController extends Controller
     public function update_dt(Request $request, $id)
     {
       $vista_dt = VistaTitulodt::findOrFail($id);
+      if($vista_dt->orden !== $request->orden){
+        DB::select("UPDATE vista_titulodt SET orden = orden + 1 WHERE orden >= $request->orden and id <> $id");
+        
+      }
       $vista_dt->fill($request->all());
 
       $vista_dt->updatedat = date('Y-m-d H:i:s', strtotime('-4 hour'));
@@ -213,6 +217,7 @@ class MakeviewController extends Controller
       $vista_f->createdat = date('Y-m-d H:i:s', strtotime('-4 hour'));
       $vista_f->updatedat = date('Y-m-d H:i:s', strtotime('-4 hour'));
       $res = false;
+      $record = [];
       DB::beginTransaction();
       try
       {
@@ -231,6 +236,11 @@ class MakeviewController extends Controller
     public function update_form(Request $request,$id)
     {
       $vista_f = Vistaformulario::findOrFail($id);
+
+      if($vista_f->orden !== $request->orden){
+        DB::select("UPDATE vista_formulario SET orden = orden + 1 WHERE orden >= $request->orden and id <> $id"); 
+      }
+      
       $vista_f->fill($request->all());
 
       $vista_f->updatedat = date('Y-m-d H:i:s', strtotime('-4 hour'));
@@ -253,57 +263,68 @@ class MakeviewController extends Controller
     }
 
     public function make_view(Request $request){
-      // ========================= CREACIÓN DE LAS RUTAS ======================================= //
+      
+    // ========================= CREACIÓN DE VARIABLES MÓDULO ======================================= //      
 
       $vista = $request->modulo;
+      $config_modulo = Configview::where('id',$vista)->first();
+      $section = !empty($config_modulo->section) ? strtolower($config_modulo->section."/") : "";
+      $proyecto= $config_modulo->proyecto;
+      $registros_permitidos = $config_modulo->registros_permitidos;
 
-      $sistema = $request->sistema;
+      $nombre_modulo = $config_modulo->modulo;
+      $nombre_modulo_vista = strtolower(explode('Controller', $nombre_modulo)[0]);
+      $nombre_controller = $nombre_modulo."Controller";
+      $membrete = "'".$config_modulo->membrete."'";
+      $titulo_vista = "'".$config_modulo->titulo."'";
+      $modelo_import = strtolower($nombre_modulo_vista.'model');
+      $enctype = $config_modulo->enctype;
+      $color = 'pink';
+      $bread = '[';
+      $array_fillable = '[';
+
+    // ========================= CREACIÓN DE LAS RUTAS ======================================= //
+
+
+      $sistema = $proyecto;
 
       $ruta = realpath(__DIR__.'../../../../../');
 
       $ruta = str_replace('\\', '/', $ruta);
 
-      $ruta_vista = $ruta.'/'.$sistema.'/resources/views/';
+      $ruta_vista = $ruta.'/'.$sistema.'/resources/views/'.strtolower($section);
 
-      $ruta_controlador = $ruta.'/'.$sistema.'/app/Http/Controllers/';
+      $ruta_controlador = $ruta.'/'.$sistema.'/app/Http/Controllers/'.strtolower($section);
 
-      $ruta_modelo = $ruta.'/'.$sistema.'/app/Models/';
+      $ruta_modelo = $ruta.'/'.$sistema.'/app/Models/'.strtolower($section);
 
       $ruta_rutas = $ruta.'/'.$sistema."/routes/web";
 
   // ==================== VISTA DATA TABLE ========================================
 
-      $config_modulo = Configview::where('id',$vista)->first();
       $config_dt = VistaTitulodt::where('id_config',$vista)->orderBy('orden','asc')->get();
       
-      $th = '['.'"Acción",';
+      $th = '['.'["Acción",[]],';
       $key_data = '[';
-
-      $nombre_modulo = $config_modulo->modulo;
-      $nombre_modulo_vista = strtolower(explode('Controller', $nombre_modulo)[0]);
-
-      $nombre_controller= $nombre_modulo."Controller";
 
       $tabla = $config_modulo->tabla;
       $ruta_imagen = $config_modulo->ruta_imagen;
-
-      $membrete = "'".$config_modulo->membrete."'";
-      $titulo_vista = "'".$config_modulo->titulo."'";
-      
-      $bread = '[';
-      
-      $enctype = $config_modulo->enctype;
-      $color = 'pink';
-      $modelo_import = strtolower($nombre_modulo_vista.'model');
-      $array_fillable = '[';
-
       
       foreach ($config_dt as $row) 
       {
-        $th.= "'".$row->nombre."',";
+        $medidas_hidden = !empty($row->hidden) ? explode(',', $row->hidden) : [];
+        $hidden = '[';
+
+        foreach ($medidas_hidden as $rowHidden){
+          $hidden .= "'$rowHidden',";
+        }
+
+        $hidden = strlen($hidden) > 1 ? substr($hidden,0,strlen($hidden) -1)."]" : $hidden.= ']';
+
+        $th.= "['".$row->nombre."',$hidden],";
         $resaltar = $row->resaltar ? true : 0;
         $format_number = $row->format_number ? true : 0;
-        $key_data.= "['".$row->key."',".$resaltar.",".$format_number."],";
+        $key_data.= "['".$row->key."',".$resaltar.",".$format_number.",$hidden],";
       }
 
       foreach (explode(',', $config_modulo->breadcrumb) as $row) 
@@ -341,10 +362,25 @@ class MakeviewController extends Controller
 
         if($row->tipo !== 5 && $row->tipo !== 6)
         {
+
+          if($row->value === "true"){
+            $row->value = true;
+          }elseif($row->value === "false"){
+            $row->value = 0;
+          }elseif($row->value === "null"){
+            $row->value = "''";
+          }else{
+            $row->value = "'".$row->value."'";
+          }
+
+
+          if($row->placeholder === "null"){
+            $row->placeholder = null;
+          }
           
           $array.= "'".$row->name_id."'".",";
           $array.= "'".$row->placeholder."'".",";
-          $array.= "'".$row->value."'".",";
+          $array.= $row->value.",";
 
           if($row->tipo === 3)
           {
@@ -369,8 +405,15 @@ class MakeviewController extends Controller
             foreach ($valores as $row1) 
             {
               $y = explode(',', $row1);
-
-              $z = '["id" => "'.$y[0].'", "'.$selected.'" => "'.$y[1].'"],';
+              if($y[0] === "true"){
+                $y[0] = true;
+              }elseif($y[0] === "false"){
+                $y[0] = 0;
+              }else{
+                $y[0] = "'".$y[0]."'";
+              }
+              
+              $z = '["id" => '.$y[0].', "'.$selected.'" => "'.$y[1].'"],';
 
               $asociacion.= $z;
             }
@@ -389,17 +432,25 @@ class MakeviewController extends Controller
         else
         {
 
-          if(!empty($row->check_table))
+          if($row->check_table !== "null" && !empty($row->check_table) && $row->check_table !== null)
           {
+          
             $sql = "SELECT id, $row->check_field from $row->check_table where activo = true";
             //$result = $this->configviewmodel->query($sql);
-            
+            if($row->selected === "true"){
+              $row->selected = true;
+            }elseif($row->selected === "false"){
+              $row->selected = 0;
+            }else{
+              $row->selected = "'".$row->selected."'";
+            }
+
             $x = '[';
             
             $x.= "'".$row->check_field."'".',';
             $x.= "'".$row->name_id."'".',';
             $x.= "'0'".",";
-            $x.= "'".$row->selected."'".",";
+            $x.= $row->selected.",";
             $x.= "'".base64_encode($sql)."'".",";
 
 
@@ -407,7 +458,9 @@ class MakeviewController extends Controller
             
             $pick = '['.$x.'],';
 
-            $array.= $pick;
+            $pick = substr($pick, 0,strlen($pick) -1);
+
+            $array.= $pick.'],';
           }
           else
           {
@@ -420,13 +473,29 @@ class MakeviewController extends Controller
 
             foreach (explode(',', $id_name[1]) as $row1) 
             {
+              $selected_row = "";
+              if($valores[$con] === "true"){
+                $valores[$con] = true;
+              }elseif($valores[$con] === "false"){
+                $valores[$con] = 0;
+              }else{
+                $valores[$con] = "'".$valores[$con]."'";
+              }
+
+              if($row->selected === "true"){
+                $selected_row = true;
+              }elseif($row->selected === "false"){
+                $selected_row = 0;
+              }else{
+                $selected_row = "'".$row->selected."'";
+              }
 
               $x = '[';
 
               $x.= "'".$row1."'".',';
               $x.= "'".$id_name[0]."'".',';
-              $x.= "'".$valores[$con]."'".',';
-              $x.= "'".$row->selected."'";
+              $x.= $valores[$con].',';
+              $x.= $selected_row.',';
 
               $x = $x.'],';
 
@@ -438,11 +507,16 @@ class MakeviewController extends Controller
 
             $pick = substr($pick, 0,strlen($pick) -1);
 
-            $pick = $pick.']';
+            $pick = $pick.'],';
 
 
             $array.= $pick;
           }
+          
+          $multi = $row->multiple ? true : 0;
+
+          $array.= '"","","","",'.$multi;
+
         } // end if si es radio o check
 
         $con_elements++;
@@ -499,11 +573,26 @@ class MakeviewController extends Controller
 
     $funciones_controlador_primario = '';
     $modelo_controlador_primario = '';
+    $php_registros_permitidos = "";
 
+    if($registros_permitidos > 0){
+      $php_registros_permitidos = '
+        $total = '.ucwords($modelo_import).'::count();
+
+        if($total >= '.$registros_permitidos.'){
+          return redirect()->route($function,["menu" => $id_menu])->with([
+            "type" => "danger",
+            "message" => "No esta permitido más registros para este módulo"
+          ]);          
+          exit();
+        }
+        ';
+    }
       $funciones_controlador_primario = '
         
       public function store(Request $request){
         
+        '.$php_registros_permitidos.'
         $store = new '.ucwords($modelo_import).';
         $store->fill($request->all());
         $store->updated_at = date("Y-m-d H:i:s");
@@ -521,9 +610,9 @@ class MakeviewController extends Controller
             $file = $request->{$key};
 
         
-            $imageName = time().".".$file->getClientOriginalExtension();
+            $imageName = $key.time().".".$file->getClientOriginalExtension();
 
-            $file->move(public_path("'.$ruta_imagen.'"), $imageName);
+            $file->move(public_path($ruta), $imageName);
             
             $store->{$key} = $imageName;
           }
@@ -558,9 +647,9 @@ class MakeviewController extends Controller
             $file = $request->{$key};
 
         
-            $imageName = time().".".$file->getClientOriginalExtension();
+            $imageName = $key.time().".".$file->getClientOriginalExtension();
 
-            $file->move(public_path("'.$ruta_imagen.'"), $imageName);
+            $file->move(public_path($ruta), $imageName);
             
             $store->{$key} = $imageName;
           }
@@ -588,7 +677,7 @@ class MakeviewController extends Controller
         }catch(\Illuminate\Database\QueryException $e){
           
           $message = "No se puede eliminar el registro porque tiene registros asociados";
-          return redirect()->route("users.index")->with(["type" => "success", "message" => $message]);
+          return redirect()->route($function,["menu" => $id_menu])->with(["type" => "success", "message" => $message]);
         }
 
       }
@@ -609,31 +698,31 @@ class MakeviewController extends Controller
 
       $modelo_controlador_primario = '<?php
 
-  namespace App\Models;
+namespace App\Models\\'.ucwords(substr($section, 0,strlen($section) - 1)).';
 
-  use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model;
 
-  class '.ucwords($modelo_import).' extends Model
-  {
-      //
-    protected $table = "'.$config_modulo->tabla.'";
+class '.ucwords($modelo_import).' extends Model
+{
+    //
+  protected $table = "'.$config_modulo->tabla.'";
 
-    protected $fillable = '.$array_fillable.'
+  protected $fillable = '.$array_fillable.'
 
-    public $timestamps =  false;
-  }
+  public $timestamps =  false;
+}
 ?>';
   // ============================= CONTROLADOR MÄS FUNCIONES ==================================
 
     $data_controller = '<?php
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\\'.ucwords(substr($section, 0,strlen($section) - 1)).';
 use App\Http\Controllers\Controller;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
-use App\Models\\'.ucwords($modelo_import).';
+use App\Models\\'.ucwords(substr($section, 0,strlen($section) - 1))."\\".ucwords($modelo_import).';
 
 class '.$nombre_controller.' extends Controller
 {
@@ -653,7 +742,7 @@ class '.$nombre_controller.' extends Controller
     '.$options_html_querys.'
     $data["data"] = '.ucwords($modelo_import).'::all();
     $data["campos"] = '.$campos.'
-    return view("'.strtolower($nombre_modulo_vista).'.index")->with($data);
+    return view("'.strtolower(substr($section, 0,strlen($section) - 1)).".".strtolower($nombre_modulo_vista).'.index")->with($data);
   }
 
   '.$funciones_controlador_primario.' 
@@ -681,6 +770,12 @@ class '.$nombre_controller.' extends Controller
               fclose($vista_blade);
       }
 
+      if(!file_exists($ruta_controlador))
+      {
+        // si no existe la carpeta en el controlador la creamos
+        mkdir($ruta_controlador,0777,true);
+      }
+
       $controller_blade = fopen($ruta_controlador.$nombre_controller.".php", "w");
 
       if ( ! fwrite($controller_blade, $data_controller))
@@ -693,6 +788,12 @@ class '.$nombre_controller.' extends Controller
       {
               $respuesta[] = ['controlador' => 'Ha sido generado con éxito'];
               fclose($controller_blade);
+      }
+
+      if(!file_exists($ruta_modelo))
+      {
+        // si no existe la carpeta en el modelo la cremos
+        mkdir($ruta_modelo,0777,true);
       }
 
       $model_blade = fopen($ruta_modelo.ucwords($modelo_import).".php", "w");
@@ -708,7 +809,8 @@ class '.$nombre_controller.' extends Controller
       } 
 
       $route_blade = fopen($ruta_rutas.".php", "a");
-      $ruta_nueva = "\n//$nombre_modulo\nroute::resource('$nombre_modulo_vista','$nombre_controller');";
+      $section_    = strtolower(substr($section, 0,strlen($section) -1));
+      $ruta_nueva  = "\n//$nombre_modulo-$section_\nroute::resource('$nombre_modulo_vista','$section_\\$nombre_controller');";
 
       if ( ! fwrite($route_blade, $ruta_nueva))
       {

@@ -19,7 +19,7 @@
     <i class="ace-icon fa fa-tachometer bigger-250"></i>Default&nbsp;
     </a>
     
-      <a href="{{ route('users.index', ['tipo_bd' => 2]) }} }}" 
+      <a href="{{ route('users.index', ['tipo_bd' => 2] ) }}" 
         class="btn btn-app btn-{{ session('tipo_db') === '2' ? 'primary':'default' }}">
             <i class="ace-icon fa fa-eye bigger-250"></i>
             Admin&nbsp;

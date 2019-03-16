@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 use App\Menu;
 use App\PermisoAccion;
-use App\Acceso;
+use App\Permiso;
 
 class MenuController extends Controller
 {
@@ -120,7 +120,6 @@ class MenuController extends Controller
     public function destroy($id)
     {
         //
-
         $count = Menu::where('id_padre',$id)->count();
 
         if($count > 0)
@@ -132,14 +131,14 @@ class MenuController extends Controller
         }
         else
         {
-            DB::transaction(function(){
+            DB::transaction(function() use ($id){
                 
                 Menu::destroy($id);
-                PermisoAccion::where('id_modulo',$id)->destroy();
+                PermisoAccion::where('id_modulo',$id)->delete();
 
                 $sql = "UPDATE acceso SET id_sub_area = array_remove(id_sub_area, $id), id_area = array_remove(id_area, $id)";
                 DB::raw($sql);
-                Acceso::where('id_modulo',$id)->destroy();
+                Permiso::where('id_modulo',$id)->delete();
 
             });
 

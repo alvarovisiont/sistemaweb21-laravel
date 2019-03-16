@@ -10,11 +10,10 @@ use App\Config;
 
 class AuthController extends Controller
 {
-    //
+    //clave 123 $2y$10$wxsnNmO9fyCSp/Mok9v5zOq.rXqaP5Niw5aGPVIm7oT75r5CX1RP.
 
   public function index()
   {
-    
       select_db(1);
       //buscar tipo de logueo
       $row = Config::first();

@@ -26,6 +26,21 @@
   </h1>
 </div><!-- /.page-header -->
 
+<div class="row no-gutters">
+    <div class="col-md-10 col-sm-10">
+
+      <a href="{{ route('config.index', ['tipo_db' => 1]) }}" 
+        class="btn btn-app btn-{{ session('tipo_db') === '1' ? 'primary':'default' }}">
+        <i class="ace-icon fa fa-tachometer bigger-250"></i>Default&nbsp;
+      </a>
+    
+      <a href="{{ route('config.index', ['tipo_db' => 2]) }}" 
+        class="btn btn-app btn-{{ session('tipo_db') === '2' ? 'primary':'default' }}">
+        <i class="ace-icon fa fa-eye bigger-250"></i>Admin&nbsp;
+      </a>
+    </div>
+</div>
+
 
  <form action="{{ url('config/'.$id) }}" method="POST" enctype="multipart/form-data">
     

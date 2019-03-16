@@ -40,6 +40,7 @@
 		<link href="{{ asset('assets_sistema/css/toastr.min.css') }}" rel="stylesheet" type="text/css">
 
 		<link href="{{ asset('assets_sistema/css/styles.css') }}" rel="stylesheet" type="text/css">
+    @yield('signature_css')
 	</head>
 	<body class="no-skin">
 		@include('partials.menu')
@@ -104,6 +105,7 @@
 		<script src=" {{ asset('assets_sistema/js/jquery.dataTables.bootstrap.min.js') }}"></script>
 		<script src="{{ asset('assets_sistema/js/jquery.maskedinput.min.js') }}"></script>
 		<script src="{{ asset('assets_sistema/js/toastr.min.js') }}"></script>
+    @yield('signature_js')
 
 		<!-- inline scripts related to this page -->
 
@@ -194,25 +196,41 @@
               {
                 if(element.indexOf('_check_radio') !== -1)
                 {
-                  let element_limpio = element.replace('_check_radio', '')
+                  if(element.indexOf('_multiple') !== -1){
+                    let element_limpio = element.replace('_check_radio_multiple', '')
+                    let array_values = data[element].split(',')
+                    
+                    array_values.forEach(function(ele,i){
+                      $('input[name="'+element_limpio+'[]"][value="'+ele+'"]').prop('checked',true)
+                    })
+                  }else{
+                    let element_limpio = element.replace('_check_radio', '')
+                    data[element] = !data[element] ? 0 : data[element];
 
-                  $('input[name="'+element_limpio+'"][value="'+data[element]+'"]').prop('checked',true)
-                  
+                    $('input[name="'+element_limpio+'"][value="'+data[element]+'"]').prop('checked',true)
+                  } 
                 }
                 else if(element.indexOf('_select') !== -1)
                 {
                   let element_limpio = element.replace('_select', '') 
+
+                  data[element] = !data[element] ? 0 : data[element];
 
                   $('select[name="'+element_limpio+'"]').val(data[element]).prop('selected',true).change()
                 }
                 else if(element.indexOf('_image') !== -1)
                 {
                   $('input[type="file"]').prop('required',false)
-                 // document.querySelector('[name="'+element+'"]').value = data[element]
+                  if(document.querySelector('[name="'+element+'"]').type !== "file"){
+                    document.querySelector('[name="'+element+'"]').value = data[element]
+                  }
                 }
                 else
                 {
+                  data[element] = !data[element] ? 0 : data[element]
+
                   $("[name='"+element+"']").val(data[element])
+                  //document.querySelector('[name="'+element+'"]').value = data[element]
                 }
               }
             });

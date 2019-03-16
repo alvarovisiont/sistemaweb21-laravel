@@ -19,7 +19,7 @@ class UsuarioController extends Controller
     public function index(Request $request)
     {
         //
-        select_db($request->get('tipo_db'));
+        select_db($request->get('tipo_bd'));
         
         $users = User::all();
 

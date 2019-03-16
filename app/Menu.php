@@ -80,8 +80,7 @@ class Menu extends Model
     {
         $menu = self::show_menu_perfil();
 
-        $html_menu = '<div id="sidebar" class="sidebar responsive ace-save-state">
-                      <ul class="nav nav-list">';  
+        $html_menu = '<ul class="nav nav-list">';  
 
          $aux_tipo = 0;
         
@@ -205,7 +204,10 @@ class Menu extends Model
       }//en modulo   
     /*-----------------------------------------------------------------*/
 
-      $html_menu .= '</ul> </div>';
+      $html_menu .= '</ul>
+                      <div class="sidebar-toggle sidebar-collapse" id="sidebar-collapse">
+                          <i id="sidebar-toggle-icon" class="ace-icon fa fa-angle-double-left ace-save-state" data-icon1="ace-icon fa fa-angle-double-left" data-icon2="ace-icon fa fa-angle-double-right"></i>
+                      </div>';
 
       session(['menu_usuario' => $html_menu]);
     }

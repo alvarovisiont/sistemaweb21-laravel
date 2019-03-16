@@ -56,4 +56,8 @@ route::delete('crear_vista/delete_form/{id}','MakeviewController@delete_form')->
 
 route::post('crear_vista/make_view','MakeviewController@make_view')->name('crear_vista.make_view');
 
+route::get('/signature','SignatureController@index')->name('signature');
+route::post('/signature','SignatureController@store')->name('signature');
 
+//Task-
+route::resource('task','TaskController');

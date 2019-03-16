@@ -126,6 +126,8 @@
 									<option value="fa-file-text-o">fa-file-text-o</option>
 									<option value="fa-file-pdf-o">fa-file-pdf-o</option>
 									<option value="fa-search">fa-search</option>
+									<option value="fa-bank">fa-bank</option>
+									<option value="fa-money">fa-money</option>
 								</select>							
 							</div>
 						</div>

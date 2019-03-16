@@ -50,8 +50,9 @@
                         data-th ="${datos.nombre}"
                         data-activo ="${datos.activo}"
                         data-key ="${datos.key}"
-                        data-resaltar ="${datos.resaltar}"
-                        data-format_number ="${datos.format_number}"
+                        data-resaltar ="${datos.resaltar === true ? true : 0}"
+                        data-format_number ="${datos.format_number === true ? true : 0}"
+                        data-hidden ="${datos.hidden}"
                         data-orden ="${datos.orden}"
                       >
                                 <img src="{{ asset('assets_sistema/images/acciones/modificar.png') }}" width="20px" class="modificar"/>
@@ -109,6 +110,7 @@
       $('#form_dt').find('#orden').val(dataset.orden)
       $('#form_dt').find('#format_number').val(dataset.format_number)
       $('#form_dt').find('#resaltar').val(dataset.resaltar)
+      $('#form_dt').find('#hidden').val(dataset.hidden)
 
       $('#form_dt').find('#orden').prop('readonly',false)
       $('#form_dt').attr('action', '{{ url("crear_vista/update_dt") }}/'+dataset.id)

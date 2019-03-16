@@ -1,0 +1,33 @@
+-- Table: public.cuentas
+
+-- DROP TABLE public.cuentas;
+
+CREATE TABLE public.cuentas
+(
+  id serial not null,
+  nombre_completo character varying(255),
+  monto numeric(20,2),
+  created_at timestamp without time zone,
+  updated_at timestamp without time zone,
+  activo boolean DEFAULT true,
+  CONSTRAINT cuentas_pkey PRIMARY KEY (id)
+)
+
+===============================================================
+
+-- Table: public.movimientos
+
+-- DROP TABLE public.movimientos;
+
+CREATE TABLE public.movimientos
+(
+  id integer NOT NULL DEFAULT nextval('movimientos_id_seq'::regclass),
+  id_cuenta integer,
+  tipo character varying,
+  monto numeric(20,2),
+  created_at timestamp without time zone,
+  updated_at timestamp without time zone,
+  activo boolean DEFAULT true,
+  fecha_movimiento timestamp without time zone,
+  CONSTRAINT movimientos_pkey PRIMARY KEY (id)
+)

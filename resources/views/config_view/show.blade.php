@@ -79,6 +79,7 @@
                                     data-key ="{{ $row->key }}"
                                     data-resaltar ="{{ $row->resaltar }}"
                                     data-format_number ="{{ $row->format_number }}"
+                                    data-hidden ="{{ $row->hidden }}"
                                     data-orden ="{{ $row->orden }}"
                                   >
                                                       <img src="{{ asset('assets_sistema/images/acciones/modificar.png') }}" width="20px" class="modificar"/>
@@ -122,19 +123,23 @@
                             <label for="th" class="control-label col-md-2 col-sm-2">Resaltar</label>
                             <div class="col-md-4 col-sm-4">
                               <select name="resaltar" id="resaltar" class="form-control">
-                                <option value="">No</option>
+                                <option value="0">No</option>
                                 <option value="1">Si</option>
                               </select>
                             </div>
                             <label for="key" class="control-label col-md-2 col-sm-2">Formateo Número</label>
                             <div class="col-md-4 col-sm-4">
                               <select name="format_number" id="format_number" class="form-control">
-                                <option value="">No</option>
+                                <option value="0">No</option>
                                 <option value="1">Si</option>
                               </select>
                             </div>
                           </div>
                           <div class="form-group">
+                            <label for="orden" class="control-label col-md-2 col-sm-2">Hidden</label>
+                            <div class="col-md-4 col-sm-4">
+                              <input type="text" id="hidden" name="hidden" class="form-control" value="" placeholder="medidas separadas por comas xs,sm,md,lg">
+                            </div>
                             <label for="orden" class="control-label col-md-2 col-sm-2">Order</label>
                             <div class="col-md-4 col-sm-4">
                               <input type="number" id="orden" name="orden" required="" class="form-control" value="" readonly="">
@@ -400,16 +405,12 @@
                           <h3 class="text-center">Generar Vista</h3>
                           <br/>
                           <div class="form-group row no-gutters">
-                            <div class="col-md-4 col-sm-4 control-label col-md-offset-4 col-sm-offset-4">
-                              <input type="text" class="form-control" name="sistema" required="" placeholder="Nombre del Sistema">
-                            </div>
-                          </div>
-                          <div class="form-group row no-gutters">
                             <div class="col-md-offset-5 col-sm-offset-5 col-md-3 col-sm-3">
                               <button type="submit" class="btn btn-app btn-pink no-radius" id="btn_generar_vista">
                                 <i class="ace-icon fa fa-cloud-upload bigger-250"></i>
-                                Click
+                                Archivos
                               </button>
+                              <p style="font-family: cursive;">Observa la Mágia</p>
                             </div>
                           </div>
                         </form>

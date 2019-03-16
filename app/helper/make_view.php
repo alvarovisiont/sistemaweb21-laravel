@@ -74,9 +74,10 @@
 
             data       : *| data de la base de datos del dataTable |*
 
-            th         : *| Nombre de los campos en la tabla |*
+            th         : *| Array con el nombre de los campos en la tabla y medidas de ocultar bootstrap |*
 
-            key_data   : *| arreglo de las keys del foreach de data en el dataTable, ejemplo: ['id_permiso','nombre'] |*
+            key_data   : *| arreglo de las keys del foreach de data en el dataTable, posiciones: 0 => nombre, 1 =>              resaltar el texto, 2 => formatear número (1.000,00),
+                            ejemplo: [['id_permiso',1,0],['monto',0,1]] } |*
 
             totales    : *| arreglo para mostrar los totales de la vista, ejemplo: ['compras' => 80,'inventario' => 100] |*  
 
@@ -198,7 +199,15 @@
 // =============================== | NOMBRE DE LOS CAMPOS EN LA TABLA | ========================================
         
         foreach ($th as $row) {
-            $keys_tabla.='<th class="text-center text-primary">'.ucwords($row).'</th>';
+            $hidden = "";
+            if(count($row[1]) > 0){
+              foreach ($row[1] as $rowHidden) {
+                # code...
+                $hidden.= " hidden-$rowHidden";
+              }
+            }
+
+            $keys_tabla.='<th class="text-center text-primary '.$hidden.'">'.ucwords($row[0]).'</th>';
         }
 
 // =============================== | BOTONES PERMISOS TABLA | ==================================================
@@ -235,12 +244,8 @@
 
                 foreach ($campos as $row1) 
                 {   
-                    
-                    if(!is_array($row1[4]) && isset($row1[7]) && !is_array($row1[5]))
-                    {
-                        $data_attr .= ' data-'.$row1[4].'="'.$row->{$row1[4]}.'"' ;
-                    }
-                    elseif(isset($row1[7]) && is_array($row1[7]))
+                    $multiple_val = isset($row1[9]) && $row1[9] ? "_multiple" : "";
+                    if(isset($row1[7]) && is_array($row1[7]))
                     {
                         $data_attr .= ' data-'.$row1[4].'_select="'.$row->{$row1[4]}.'"';       
                     }
@@ -248,7 +253,7 @@
                     {
                         foreach ($row1[4] as $row2) 
                         {
-                            $data_attr .= ' data-'.$row2[1].'_check_radio="'.$row->{$row2[1]}.'"';       
+                            $data_attr .= ' data-'.$row2[1].'_check_radio'.$multiple_val.'="'.$row->{$row2[1]}.'"';       
                         }
                     }
                     else
@@ -293,60 +298,69 @@
                 $resaltador = $row1[1] === 1 ? $span : '';
                 $cierre_resaltador = $row1[1] === 1 ? '</span>' : '';
                 $row->{$row1[0]} = $row1[2] === 1 ? number_format($row->{$row1[0]},2,',','.') : $row->{$row1[0]};
+
+                $hidden = "";
+
+                if(count($row1[3]) > 0){
+                  foreach ($row1[3] as $rowHidden) {
+                    # code...
+                    $hidden.= " hidden-$rowHidden";
+                  }
+                }
                 
 
                if($row->{$row1[0]} === TRUE)
                 {
                     $on_off = '<img width="35px" src="'.asset("assets_sistema/images/gallery/activo.jpg").'" data-tool="tooltip" title="Activo"/>';
 
-                    $cuerpo_tabla.='<td>'.$resaltador.$on_off.$cierre_resaltador.'</td>';
+                    $cuerpo_tabla.='<td class="'.$hidden.'">'.$resaltador.$on_off.$cierre_resaltador.'</td>';
 
                 }
                 else if($row->{$row1[0]} === FALSE)
                 {
                     $on_off = '<img width="35px" src="'.asset("assets_sistema/images/gallery/desactivado.png").'" data-tool="tooltip" title="Desactivado" />';
 
-                    $cuerpo_tabla.='<td>'.$resaltador.$on_off.$cierre_resaltador.'</td>';
+                    $cuerpo_tabla.='<td class="'.$hidden.'">'.$resaltador.$on_off.$cierre_resaltador.'</td>';
                     
                 }
                 else if($row->{$row1[0]} === 'MASCULINO')
                 {
                     $masculino = '<img width="35px" src="'.asset("assets_sistema/images/avatars/avatar3.png").'" data-tool="tooltip" title="MASCULINO"/>';
 
-                    $cuerpo_tabla.='<td>'.$resaltador.$masculino.$cierre_resaltador.'</td>';
+                    $cuerpo_tabla.='<td class="'.$hidden.'">'.$resaltador.$masculino.$cierre_resaltador.'</td>';
 
                 }
                 else if($row->{$row1[0]} === 'FEMENINO')
                 {
                     $femenino = '<img width="35px" src="'.asset("assets_sistema/images/avatars/avatar4.png").'" data-tool="tooltip" title="FEMENINO"/>';
 
-                    $cuerpo_tabla.='<td>'.$resaltador.$femenino.$cierre_resaltador.'</td>';
+                    $cuerpo_tabla.='<td class="'.$hidden.'">'.$resaltador.$femenino.$cierre_resaltador.'</td>';
                 }
                 else if( strpos($row->{$row1[0]}, 'jpg') || strpos($row->{$row1[0]}, 'png'))
                 {
                     $imagen_campo = '
-                    <a href="'.base_url().$ruta_imagen.$row->{$row1[0]}.'" target="_blank">
-                    <img width="40px" src="'.base_url().$ruta_imagen.$row->{$row1[0]}.'" data-tool="tooltip" title=""/>
+                    <a href="'.asset($ruta_imagen.$row->{$row1[0]}).'" target="_blank">
+                    <img width="40px" src="'.asset($ruta_imagen.$row->{$row1[0]}).'" data-tool="tooltip" title=""/>
                     </a>';
 
-                    $cuerpo_tabla.='<td>'.$resaltador.$imagen_campo.$cierre_resaltador.'</td>';
+                    $cuerpo_tabla.='<td class="'.$hidden.'">'.$resaltador.$imagen_campo.$cierre_resaltador.'</td>';
                 }
                 else if( strpos($row->{$row1[0]}, 'pdf'))
                 {
                     $imagen_campo = '
-                    <a href="'.base_url().$ruta_imagen.$row->{$row1[0]}.'" target="_blank">
-                    <img width="40px" src="'.base_url().'assets_sistema/images/acciones/reporte.jpg" data-tool="tooltip" title=""/>
+                    <a href="'.asset($ruta_imagen.$row->{$row1[0]}).'" target="_blank">
+                    <img width="40px" src="'.asset('assets_sistema/images/acciones/reporte.jpg').'" data-tool="tooltip" title=""/>
                     </a>';
 
-                    $cuerpo_tabla.='<td>'.$resaltador.$imagen_campo.$cierre_resaltador.'</td>';
+                    $cuerpo_tabla.='<td class="'.$hidden.'">'.$resaltador.$imagen_campo.$cierre_resaltador.'</td>';
                 }
                 else if(validateDate($row->{$row1[0]}))
                 {
-                    $cuerpo_tabla.='<td>'.$resaltador.date('d-m-Y H:i:s',strtotime($row->{$row1[0]})).$cierre_resaltador.'</td>';
+                    $cuerpo_tabla.='<td class="'.$hidden.'">'.$resaltador.date('d-m-Y H:i:s',strtotime($row->{$row1[0]})).$cierre_resaltador.'</td>';
                 }
                 else
                 {
-                    $cuerpo_tabla.='<td>'.$resaltador.$row->{$row1[0]}.$cierre_resaltador.'</td>';
+                    $cuerpo_tabla.='<td class="'.$hidden.'">'.$resaltador.$row->{$row1[0]}.$cierre_resaltador.'</td>';
                 }
                 
             }
@@ -456,10 +470,12 @@
             $placeholder = isset($placeholder) && !empty($row[5]) && $row[5] !== null ? $row[5] : '';
 
 
-            /*if($con_boxes === 0)
+            if($con_boxes === 0)
             {
                 $html.='<div class="row no-gutters">';
-            }*/
+            }
+
+            $con_boxes = $con_boxes + $cols[2];
             
             $clase_boostrap = 'col-xs-'.$cols[0].' col-sm-'.$cols[1].' col-md-'.$cols[2].' col-lg-'.$cols[3];
             $html.='
@@ -480,7 +496,7 @@
                 break;
 
                 case 2:
-                    $valor = isset($row[6]) ? $row[6] : '';
+                    $valor = isset($row[6]) ? $row[6] : null;
 
                     $html.='<input type="number" placeholder="'.$placeholder.'" class="form-control" '.$name_id_r.' value="'.$valor.'" />
                     ';
@@ -612,11 +628,14 @@
                                 }
 
                                 $checked = isset($che[3]) && $row_check->id === $che[3] ? 'checked=""' : '';
+                                $multiple= isset($row[9]) && $row[9] ? 'multiple=""' : '';
+                                $multiple_breakets= isset($row[9]) && $row[9] ? '[]' : '';
 
                                 $html.= '<div class="col-sm-3 col-md-3">
                                             <label class="inline">
                                                 <small class="muted smaller-90">'.$row_check->{$che[0]}.':</small>
-                                                <input id="id-button-borders" type="checkbox" class="ace ace-switch ace-switch-5" id="'.$row_check->{$che[0]}.$row[1].'" name="'.$che[1].'" value="'.$row_check->id.'" '.$checked.' />
+                                                <br/>
+                                                <input id="id-button-borders" type="checkbox" class="ace ace-switch ace-switch-5" id="'.$row_check->{$che[0]}.$row[1].'" name="'.$che[1].$multiple_breakets.'" value="'.$row_check->id.'" '.$checked.' '.$multiple.'/>
                                                 <span class="lbl middle"></span>
                                             </label>
                                         </div>';
@@ -714,20 +733,20 @@
             $html.=' </div>
                     </div>'; // cierre form group y div cols de espacio
 
-            $con_boxes++;
+            //$con_boxes++;
 
-            /*if($con_boxes === 2)
+            if($con_boxes === 12)
             {
                 $con_boxes = 0;
 
                 $html.='</div>';
-            }*/
+            }
         } // fin foreach
 
-        /*if($con_boxes > 0 && $con_boxes < 2)
+        if($con_boxes > 0 && $con_boxes < 12)
         {
             $html.='</div>'; // cierre del row
-        }*/
+        }
 
         $html.='
                                 </form>
